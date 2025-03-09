@@ -1,4 +1,4 @@
-
+# Project Structure
 ```bash
 door_installation_assistant/
 ├── config/
@@ -98,8 +98,9 @@ door_installation_assistant/
 │   │       ├── search-results.html
 │   │       └── upload-form.html
 │   └── server.py  # Simple server to serve the UI (using Flask)
-
-
+```
+# Architecture
+```bash
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
 │                 │     │                 │     │                 │
 │  Installation   │────▶│  Vector         │────▶│  Field Support  │
