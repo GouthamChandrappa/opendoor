@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Background and frame -->
+  <rect x="20" y="40" width="160" height="140" fill="#ffffff" stroke="#2e74b5" stroke-width="8" rx="5" />
+  
+  <!-- Door -->
+  <rect x="60" y="60" width="80" height="120" fill="#f0f0f0" stroke="#2e74b5" stroke-width="4" rx="2" />
+  
+  <!-- Door handle -->
+  <circle cx="130" cy="120" r="6" fill="#ff6b35" stroke="#2e74b5" stroke-width="2" />
+  
+  <!-- Hinges -->
+  <rect x="65" y="70" width="10" height="5" fill="#2e74b5" rx="1" />
+  <rect x="65" y="120" width="10" height="5" fill="#2e74b5" rx="1" />
+  <rect x="65" y="170" width="10" height="5" fill="#2e74b5" rx="1" />
+  
+  <!-- Top text -->
+  <text x="100" y="30" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#2e74b5" text-anchor="middle">DOOR</text>
+  
+  <!-- Bottom text -->
+  <text x="100" y="195" font-family="Arial, sans-serif" font-size="14" fill="#2e74b5" text-anchor="middle">INSTALLATION ASSISTANT</text>
+  
+  <!-- Chat bubble for assistant concept -->
+  <path d="M160,25 C172,25 180,33 180,45 C180,57 172,65 160,65 L150,65 L155,75 L145,65 L140,65 C128,65 120,57 120,45 C120,33 128,25 140,25 Z" fill="#3a8fd0" stroke="#2e74b5" stroke-width="2" />
+  
+  <!-- Question mark in chat bubble -->
+  <text x="150" y="50" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#ffffff" text-anchor="middle">?</text>
+  
+  <!-- Wrench tool icon -->
+  <g transform="translate(30, 25) rotate(15)">
+    <path d="M0,0 C2,2 15,15 15,15 L12,18 L-3,3 Z" fill="#ff6b35" stroke="#2e74b5" stroke-width="2" />
+    <rect x="-10" y="-5" width="15" height="10" fill="#ff6b35" stroke="#2e74b5" stroke-width="2" rx="2" />
+  </g>
+</svg>

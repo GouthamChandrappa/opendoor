@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search - Door Installation Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <a href="/">
+                    <img src="/static/img/logo.svg" alt="Door Installation Assistant Logo">
+                    <h1>Door Installation Assistant</h1>
+                </a>
+            </div>
+            <div class="header-actions">
+                <a href="/chat.html" class="btn btn-secondary">
+                    <i class="fa fa-comment"></i> Chat
+                </a>
+                <button id="btnSettings" class="btn btn-icon">
+                    <i class="fa fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Search Container -->
+            <div class="search-page-container">
+                <div class="search-header">
+                    <h2>Search Installation Documents</h2>
+                </div>
+                
+                <div class="search-form">
+                    <div class="search-input-container">
+                        <input type="text" id="searchInput" placeholder="Search for installation information...">
+                        <button id="btnDoSearch" class="btn btn-primary">
+                            <i class="fa fa-search"></i> Search
+                        </button>
+                    </div>
+                    
+                    <div class="search-filters">
+                        <div class="filter-group">
+                            <label>Door Category:</label>
+                            <div class="filter-options">
+                                <label class="filter-option">
+                                    <input type="checkbox" name="doorCategory" value="interior"> Interior
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" name="doorCategory" value="exterior"> Exterior
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label>Door Type:</label>
+                            <div class="filter-options">
+                                <label class="filter-option interior-type">
+                                    <input type="checkbox" name="doorType" value="bifold"> Bifold
+                                </label>
+                                <label class="filter-option interior-type">
+                                    <input type="checkbox" name="doorType" value="prehung"> Prehung
+                                </label>
+                                <label class="filter-option exterior-type">
+                                    <input type="checkbox" name="doorType" value="entry-door"> Entry Door
+                                </label>
+                                <label class="filter-option exterior-type">
+                                    <input type="checkbox" name="doorType" value="patio-door"> Patio Door
+                                </label>
+                                <label class="filter-option exterior-type">
+                                    <input type="checkbox" name="doorType" value="dentil-shelf"> Dentil Shelf
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label>Content Type:</label>
+                            <div class="filter-options">
+                                <label class="filter-option">
+                                    <input type="checkbox" name="contentType" value="installation_step"> Installation Steps
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" name="contentType" value="tool"> Tools & Materials
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" name="contentType" value="safety"> Safety Guidelines
+                                </label>
+                                <label class="filter-option">
+                                    <input type="checkbox" name="contentType" value="troubleshooting"> Troubleshooting
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="search-results-container">
+                    <div id="searchResults" class="search-results-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <footer class="status-bar">
+            <div class="status-item">
+                <span id="connectionStatus" class="status-indicator connected"></span>
+                <span>Connected</span>
+            </div>
+            <div class="status-item">
+                <span id="sessionId"></span>
+            </div>
+            <div class="status-item">
+                <span class="version">v1.0.0</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modals -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button id="btnCloseSettings" class="btn btn-icon">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="apiUrl">API URL:</label>
+                    <input type="text" id="apiUrl" class="form-control" value="http://localhost:8000">
+                </div>
+                <div class="form-group">
+                    <label for="fontSize">Font Size:</label>
+                    <select id="fontSize" class="form-control">
+                        <option value="small">Small</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="theme">Theme:</label>
+                    <select id="theme" class="form-control">
+                        <option value="light" selected>Light</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btnSaveSettings" class="btn btn-primary">Save</button>
+                <button id="btnCancelSettings" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Detail Modal -->
+    <div id="resultDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Document Detail</h2>
+                <button id="btnCloseDetail" class="btn btn-icon">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="resultDetail" class="result-detail-content"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="btnUseInChat" class="btn btn-primary">Use in Chat</button>
+                <button id="btnCopyDetail" class="btn btn-secondary">Copy Content</button>
+                <button id="btnCloseDetailFooter" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Searching...</div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/search.js"></script>
+    <script>
+        // Initialize the app when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize the session ID
+            const sessionId = generateSessionId();
+            document.getElementById('sessionId').textContent = `Session: ${sessionId.substring(0, 8)}...`;
+            
+            // Initialize the app with search focus
+            initApp(sessionId);
+            
+            // Additional search page initialization
+            initSearchPage();
+        });
+        
+        // Search page specific initialization
+        function initSearchPage() {
+            // Set up filter interactions
+            setupFilterInteractions();
+            
+            // Set up result detail modal
+            setupResultDetailModal();
+        }
+        
+        // Set up filter interactions
+        function setupFilterInteractions() {
+            // Show/hide door types based on selected categories
+            const categoryCheckboxes = document.querySelectorAll('input[name="doorCategory"]');
+            categoryCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateDoorTypeVisibility();
+                });
+            });
+            
+            // Initial visibility update
+            updateDoorTypeVisibility();
+        }
+        
+        // Update door type visibility based on selected categories
+        function updateDoorTypeVisibility() {
+            const interiorChecked = document.querySelector('input[name="doorCategory"][value="interior"]').checked;
+            const exteriorChecked = document.querySelector('input[name="doorCategory"][value="exterior"]').checked;
+            
+            // Show/hide interior types
+            document.querySelectorAll('.interior-type').forEach(el => {
+                el.style.display = interiorChecked || (!interiorChecked && !exteriorChecked) ? 'inline-block' : 'none';
+            });
+            
+            // Show/hide exterior types
+            document.querySelectorAll('.exterior-type').forEach(el => {
+                el.style.display = exteriorChecked || (!interiorChecked && !exteriorChecked) ? 'inline-block' : 'none';
+            });
+        }
+        
+        // Set up result detail modal
+        function setupResultDetailModal() {
+            const modal = document.getElementById('resultDetailModal');
+            const closeButtons = [
+                document.getElementById('btnCloseDetail'),
+                document.getElementById('btnCloseDetailFooter')
+            ];
+            
+            closeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    modal.classList.remove('show');
+                });
+            });
+            
+            // Use in chat button
+            document.getElementById('btnUseInChat').addEventListener('click', function() {
+                const detail = document.getElementById('resultDetail').textContent;
+                // Store in session storage for chat page
+                sessionStorage.setItem('searchResult', detail);
+                // Redirect to chat page
+                window.location.href = '/chat.html';
+            });
+            
+            // Copy content button
+            document.getElementById('btnCopyDetail').addEventListener('click', function() {
+                const detail = document.getElementById('resultDetail').textContent;
+                navigator.clipboard.writeText(detail)
+                    .then(() => {
+                        showToast('Content copied to clipboard', 'success');
+                    })
+                    .catch(err => {
+                        showToast('Failed to copy content', 'error');
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

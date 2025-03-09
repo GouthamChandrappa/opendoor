@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Door Installation Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/chat.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <a href="/">
+                    <img src="/static/img/logo.svg" alt="Door Installation Assistant Logo">
+                    <h1>Door Installation Assistant</h1>
+                </a>
+            </div>
+            <div class="header-actions">
+                <a href="/search.html" class="btn btn-secondary">
+                    <i class="fa fa-search"></i> Search
+                </a>
+                <button id="btnSettings" class="btn btn-icon">
+                    <i class="fa fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="door-info-panel">
+                    <h3>Door Information</h3>
+                    <div class="form-group">
+                        <label for="doorCategory">Category:</label>
+                        <select id="doorCategory" class="form-control">
+                            <option value="unknown">Unknown</option>
+                            <option value="interior">Interior</option>
+                            <option value="exterior">Exterior</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="doorType">Type:</label>
+                        <select id="doorType" class="form-control">
+                            <option value="unknown">Unknown</option>
+                            <option value="bifold" class="interior-type">Bifold</option>
+                            <option value="prehung" class="interior-type">Prehung</option>
+                            <option value="entry-door" class="exterior-type">Entry Door</option>
+                            <option value="patio-door" class="exterior-type">Patio Door</option>
+                            <option value="dentil-shelf" class="exterior-type">Dentil Shelf</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="upload-panel">
+                    <h3>Upload Documents</h3>
+                    <div class="upload-container">
+                        <form id="uploadForm">
+                            <div class="form-group">
+                                <label for="fileUpload" class="file-upload-label">
+                                    <i class="fa fa-upload"></i> Choose PDF
+                                </label>
+                                <input type="file" id="fileUpload" class="file-upload-input" accept=".pdf">
+                                <div id="fileName" class="file-name"></div>
+                            </div>
+                            <button type="submit" id="btnUpload" class="btn btn-primary full-width">
+                                Upload & Process
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="tools-panel">
+                    <h3>Tools</h3>
+                    <button id="btnClearChat" class="btn btn-tool">
+                        <i class="fa fa-trash"></i> Clear Conversation
+                    </button>
+                    <button id="btnImportImage" class="btn btn-tool">
+                        <i class="fa fa-image"></i> Import Door Image
+                    </button>
+                    <a href="/search.html" class="btn btn-tool">
+                        <i class="fa fa-search"></i> Advanced Search
+                    </a>
+                </div>
+            </aside>
+
+            <!-- Main Chat Area -->
+            <main class="chat-area">
+                <div id="chatMessages" class="chat-messages">
+                    <!-- Welcome message -->
+                    <div class="message system">
+                        <div class="message-content">
+                            <p>Welcome to the Door Installation Assistant! I'm here to help you with installing various types of doors. You can ask me questions about:</p>
+                            <ul>
+                                <li>Step-by-step installation procedures</li>
+                                <li>Required tools and materials</li>
+                                <li>Troubleshooting common issues</li>
+                                <li>Safety guidelines</li>
+                            </ul>
+                            <p>What kind of door are you working with today?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="chat-input-wrapper">
+                        <textarea id="chatInput" class="chat-input" placeholder="Ask about door installation..."></textarea>
+                        <button id="btnSend" class="btn btn-send">
+                            <i class="fa fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div class="input-tools">
+                        <button id="btnVoice" class="btn btn-tool btn-sm">
+                            <i class="fa fa-microphone"></i>
+                        </button>
+                        <button id="btnAttach" class="btn btn-tool btn-sm">
+                            <i class="fa fa-paperclip"></i>
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Status Bar -->
+        <footer class="status-bar">
+            <div class="status-item">
+                <span id="connectionStatus" class="status-indicator connected"></span>
+                <span>Connected</span>
+            </div>
+            <div class="status-item">
+                <span id="sessionId"></span>
+            </div>
+            <div class="status-item">

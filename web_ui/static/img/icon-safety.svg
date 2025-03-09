@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- Warning triangle -->
+  <path d="M24,4 L4,40 L44,40 Z" fill="#ffffff" stroke="#f44336" stroke-width="2" />
+  
+  <!-- Exclamation mark -->
+  <rect x="22" y="14" width="4" height="14" fill="#f44336" rx="2" />
+  <circle cx="24" cy="34" r="2" fill="#f44336" />
+  
+  <!-- Protective helmet -->
+  <g transform="translate(34, 18) scale(0.8)">
+    <path d="M10,15 C4,15 2,10 2,8 C2,4 6,0 10,0 C14,0 18,4 18,8 C18,10 16,15 10,15 Z" fill="#ffeb3b" stroke="#2e74b5" stroke-width="1.5" />
+    
+    <!-- Helmet stripe -->
+    <path d="M10,0 C12,0 14,1 15.5,3 L4.5,3 C6,1 8,0 10,0 Z" fill="#2e74b5" />
+  </g>
+  
+  <!-- Safety glasses -->
+  <g transform="translate(12, 22) scale(0.7)">
+    <path d="M0,4 C0,1.8 1.8,0 4,0 L6,0 C8.2,0 10,1.8 10,4 L10,6 C10,8.2 8.2,10 6,10 L4,10 C1.8,10 0,8.2 0,6 Z" fill="#99ccff" stroke="#2e74b5" stroke-width="1.5" />
+    
+    <path d="M14,4 C14,1.8 15.8,0 18,0 L20,0 C22.2,0 24,1.8 24,4 L24,6 C24,8.2 22.2,10 20,10 L18,10 C15.8,10 14,8.2 14,6 Z" fill="#99ccff" stroke="#2e74b5" stroke-width="1.5" />
+    
+    <!-- Bridge -->
+    <path d="M10,5 L14,5" stroke="#2e74b5" stroke-width="1.5" />
+  </g>
+</svg>

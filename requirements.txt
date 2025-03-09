@@ -1,0 +1,27 @@
+# requirements.txt - Door Installation Assistant
+
+# Core API Framework
+fastapi==0.104.1
+uvicorn==0.23.2
+python-multipart==0.0.6
+httpx==0.25.0
+
+# Document processing
+unstructured==0.10.27
+PyPDF2==3.0.1
+nltk==3.8.1
+
+# Vector storage
+qdrant-client==1.6.4
+
+# LLM & RAG
+openai>=1.13.3,<2.0.0
+llama-index==0.10.68
+langchain>=0.1.10,<0.2.0
+
+# Agent system
+crewai==0.28.0
+
+# Utilities
+python-dotenv==1.0.0
+tqdm==4.66.1

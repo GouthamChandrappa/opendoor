@@ -1,0 +1,392 @@
+/* Chat Specific CSS Styles for Door Installation Assistant */
+
+/* Chat Messages Container */
+.chat-messages {
+    flex: 1;
+    padding: var(--spacing-md);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+/* Message Bubbles */
+.message {
+    display: flex;
+    flex-direction: column;
+    max-width: 80%;
+}
+
+.message.system {
+    align-self: center;
+    max-width: 90%;
+}
+
+.message.user {
+    align-self: flex-end;
+}
+
+.message.assistant {
+    align-self: flex-start;
+}
+
+.message-content {
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+}
+
+.message.system .message-content {
+    background-color: var(--bg-light);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+}
+
+.message.user .message-content {
+    background-color: var(--primary-light);
+    color: white;
+    border-radius: var(--border-radius-md) var(--border-radius-md) 0 var(--border-radius-md);
+}
+
+.message.assistant .message-content {
+    background-color: var(--bg-light);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md) var(--border-radius-md) var(--border-radius-md) 0;
+}
+
+.message-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-xs);
+    font-size: var(--font-size-xs);
+    color: white;
+}
+
+.message.user .message-avatar {
+    align-self: flex-end;
+    background-color: var(--accent-color);
+}
+
+.message.assistant .message-avatar {
+    align-self: flex-start;
+    background-color: var(--primary-color);
+}
+
+.message-time {
+    font-size: var(--font-size-xs);
+    color: var(--text-light);
+    margin-top: var(--spacing-xs);
+    align-self: flex-end;
+}
+
+/* Message Content Styling */
+.message-content p {
+    margin-bottom: var(--spacing-sm);
+}
+
+.message-content p:last-child {
+    margin-bottom: 0;
+}
+
+.message-content ul, .message-content ol {
+    margin: var(--spacing-sm) 0;
+    padding-left: var(--spacing-lg);
+}
+
+.message-content code {
+    font-family: monospace;
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.message-content pre {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    overflow-x: auto;
+    margin: var(--spacing-sm) 0;
+}
+
+.message-content pre code {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+}
+
+.message-content h1, .message-content h2, .message-content h3 {
+    margin: var(--spacing-md) 0 var(--spacing-sm) 0;
+    color: var(--primary-color);
+}
+
+.message-content h1 {
+    font-size: var(--font-size-xl);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: var(--spacing-xs);
+}
+
+.message-content h2 {
+    font-size: var(--font-size-lg);
+}
+
+.message-content h3 {
+    font-size: var(--font-size-md);
+}
+
+.message-content table {
+    border-collapse: collapse;
+    margin: var(--spacing-md) 0;
+    width: 100%;
+}
+
+.message-content th, .message-content td {
+    border: 1px solid var(--border-color);
+    padding: var(--spacing-sm);
+    text-align: left;
+}
+
+.message-content th {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.message-content img {
+    max-width: 100%;
+    border-radius: var(--border-radius-sm);
+    margin: var(--spacing-md) 0;
+}
+
+.message-content blockquote {
+    border-left: 4px solid var(--primary-color);
+    padding-left: var(--spacing-md);
+    margin: var(--spacing-md) 0;
+    font-style: italic;
+    color: var(--text-light);
+}
+
+/* Chat Input */
+.chat-input-container {
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-light);
+}
+
+.chat-input-wrapper {
+    display: flex;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-lg);
+    background-color: var(--bg-color);
+    padding: var(--spacing-xs);
+    box-shadow: var(--shadow-sm);
+}
+
+.chat-input {
+    flex: 1;
+    border: none;
+    padding: var(--spacing-sm);
+    resize: none;
+    height: 40px;
+    max-height: 120px;
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    color: var(--text-color);
+    background-color: transparent;
+}
+
+.chat-input:focus {
+    outline: none;
+}
+
+.input-tools {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-xs);
+}
+
+/* Message Categories */
+.message-category {
+    display: inline-block;
+    font-size: var(--font-size-xs);
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-bottom: var(--spacing-xs);
+    font-weight: 500;
+}
+
+.category-installation {
+    background-color: var(--info-color);
+    color: white;
+}
+
+.category-troubleshooting {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.category-safety {
+    background-color: var(--error-color);
+    color: white;
+}
+
+.category-tools {
+    background-color: var(--success-color);
+    color: white;
+}
+
+/* Door Type Tags */
+.door-tag {
+    display: inline-block;
+    font-size: var(--font-size-xs);
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-right: var(--spacing-xs);
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Step Indicator */
+.step-indicator {
+    display: flex;
+    align-items: center;
+    margin: var(--spacing-sm) 0;
+    font-size: var(--font-size-sm);
+    color: var(--text-light);
+}
+
+.step-progress {
+    flex: 1;
+    height: 4px;
+    background-color: var(--border-color);
+    border-radius: 2px;
+    margin: 0 var(--spacing-sm);
+    position: relative;
+}
+
+.step-progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background-color: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* Code Formatting and Syntax Highlighting */
+.code-block {
+    position: relative;
+    margin: var(--spacing-md) 0;
+}
+
+.code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background-color: rgba(0, 0, 0, 0.1);
+    border-top-left-radius: var(--border-radius-sm);
+    border-top-right-radius: var(--border-radius-sm);
+    font-size: var(--font-size-xs);
+}
+
+.code-language {
+    font-weight: 500;
+    color: var(--text-light);
+}
+
+.copy-button {
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 2px 5px;
+    font-size: var(--font-size-xs);
+}
+
+.copy-button:hover {
+    color: var(--primary-color);
+}
+
+/* Typing Indicator */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius-md);
+    background-color: var(--bg-light);
+    max-width: fit-content;
+    margin-top: var(--spacing-sm);
+}
+
+.typing-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--text-light);
+    border-radius: 50%;
+    animation: typing-dot 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing-dot {
+    0%, 60%, 100% {
+        transform: translateY(0);
+    }
+    30% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Message Actions */
+.message-actions {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-self: flex-end;
+    margin-top: var(--spacing-xs);
+}
+
+.message-action {
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 2px;
+    font-size: var(--font-size-xs);
+}
+
+.message-action:hover {
+    color: var(--primary-color);
+}
+
+/* Markdown Styling */
+.markdown-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--border-radius-sm);
+    margin: var(--spacing-md) 0;
+}
+
+.markdown-content a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.markdown-content a:hover {
+    text-decoration: underline;
+}

@@ -1,0 +1,124 @@
+<!-- Door Installation Assistant Upload Form Component -->
+<div class="upload-container">
+    <form id="uploadForm">
+        <div class="form-group">
+            <label for="fileUpload" class="file-upload-label">
+                <i class="fa fa-upload"></i> Choose PDF
+            </label>
+            <input type="file" id="fileUpload" class="file-upload-input" accept=".pdf">
+            <div id="fileName" class="file-name"></div>
+        </div>
+        <div class="form-group">
+            <label>Document Type:</label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="documentType" value="installation" checked> 
+                    Installation Manual
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="documentType" value="technical"> 
+                    Technical Specifications
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="documentType" value="troubleshooting"> 
+                    Troubleshooting Guide
+                </label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Door Category:</label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="doorCategory" value="interior" checked> 
+                    Interior Door
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="doorCategory" value="exterior"> 
+                    Exterior Door
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="doorCategory" value="other"> 
+                    Other
+                </label>
+            </div>
+        </div>
+        <div class="form-group door-type-group" id="interiorDoorTypes">
+            <label>Door Type:</label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="doorType" value="bifold" checked> 
+                    Bifold
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="doorType" value="prehung"> 
+                    Prehung
+                </label>
+            </div>
+        </div>
+        <div class="form-group door-type-group" id="exteriorDoorTypes" style="display: none;">
+            <label>Door Type:</label>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="doorType" value="entry-door" checked> 
+                    Entry Door
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="doorType" value="patio-door"> 
+                    Patio Door
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="doorType" value="dentil-shelf"> 
+                    Dentil Shelf
+                </label>
+            </div>
+        </div>
+        <button type="submit" id="btnUpload" class="btn btn-primary full-width" disabled>
+            Upload & Process
+        </button>
+    </form>
+</div>
+
+<script>
+    // Initialize upload form
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileUpload = document.getElementById('fileUpload');
+        const fileName = document.getElementById('fileName');
+        const uploadButton = document.getElementById('btnUpload');
+        const doorCategoryRadios = document.getElementsByName('doorCategory');
+        
+        // File selection handler
+        fileUpload.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                fileName.textContent = this.files[0].name;
+                uploadButton.disabled = false;
+            } else {
+                fileName.textContent = '';
+                uploadButton.disabled = true;
+            }
+        });
+        
+        // Door category change handler to show/hide appropriate door types
+        doorCategoryRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                const interiorTypes = document.getElementById('interiorDoorTypes');
+                const exteriorTypes = document.getElementById('exteriorDoorTypes');
+                
+                if (this.value === 'interior') {
+                    interiorTypes.style.display = 'block';
+                    exteriorTypes.style.display = 'none';
+                    // Check the first interior door type
+                    document.querySelector('input[name="doorType"][value="bifold"]').checked = true;
+                } else if (this.value === 'exterior') {
+                    interiorTypes.style.display = 'none';
+                    exteriorTypes.style.display = 'block';
+                    // Check the first exterior door type
+                    document.querySelector('input[name="doorType"][value="entry-door"]').checked = true;
+                } else {
+                    // For "other" category, hide both
+                    interiorTypes.style.display = 'none';
+                    exteriorTypes.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>

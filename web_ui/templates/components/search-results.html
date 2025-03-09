@@ -1,0 +1,89 @@
+<!-- Door Installation Assistant Search Results Component -->
+<div class="search-results-wrapper">
+    <div class="search-status">
+        <span id="searchStatus">Enter a search query to find installation information</span>
+    </div>
+    
+    <div id="searchResults" class="search-results-list">
+        <!-- Search results will be inserted here by JavaScript -->
+    </div>
+    
+    <template id="searchResultTemplate">
+        <div class="search-result">
+            <div class="result-header">
+                <span class="result-number">#{{number}}</span>
+                <span class="result-score">Relevance: {{score}}%</span>
+            </div>
+            <div class="result-tags">
+                {{tags}}
+            </div>
+            <div class="result-content">
+                <p>{{content}}</p>
+            </div>
+            <div class="result-actions">
+                <button class="btn btn-sm btn-view" data-index="{{index}}">
+                    <i class="fa fa-eye"></i> View
+                </button>
+                <button class="btn btn-sm btn-use" data-index="{{index}}">
+                    <i class="fa fa-comment"></i> Use in Chat
+                </button>
+                <button class="btn btn-sm btn-copy" data-index="{{index}}">
+                    <i class="fa fa-copy"></i> Copy
+                </button>
+            </div>
+        </div>
+    </template>
+    
+    <div class="search-pagination">
+        <button id="btnPrevPage" class="btn btn-pagination" disabled>
+            <i class="fa fa-chevron-left"></i> Previous
+        </button>
+        <span id="paginationInfo">Page 1 of 1</span>
+        <button id="btnNextPage" class="btn btn-pagination" disabled>
+            Next <i class="fa fa-chevron-right"></i>
+        </button>
+    </div>
+</div>
+
+<script>
+    // Initialize search results
+    document.addEventListener('DOMContentLoaded', function() {
+        // If search results are available in the parent document
+        if (window.searchResults) {
+            displaySearchResults(window.searchResults);
+        }
+        
+        // Add event listeners to pagination buttons
+        document.getElementById('btnPrevPage').addEventListener('click', function() {
+            if (window.currentPage > 1) {
+                window.currentPage--;
+                updateSearchResultsPage();
+            }
+        });
+        
+        document.getElementById('btnNextPage').addEventListener('click', function() {
+            if (window.currentPage < window.totalPages) {
+                window.currentPage++;
+                updateSearchResultsPage();
+            }
+        });
+    });
+    
+    // Function to update search results page display
+    function updateSearchResultsPage() {
+        if (!window.searchResults || !window.currentPage) return;
+        
+        const startIndex = (window.currentPage - 1) * 5;
+        const endIndex = Math.min(startIndex + 5, window.searchResults.length);
+        
+        // Display only results for the current page
+        displaySearchResultsPage(window.searchResults.slice(startIndex, endIndex), startIndex);
+        
+        // Update pagination info
+        document.getElementById('paginationInfo').textContent = `Page ${window.currentPage} of ${window.totalPages}`;
+        
+        // Update button states
+        document.getElementById('btnPrevPage').disabled = window.currentPage === 1;
+        document.getElementById('btnNextPage').disabled = window.currentPage === window.totalPages;
+    }
+</script>

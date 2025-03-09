@@ -1,0 +1,33 @@
+<!-- Door Installation Assistant Header Component -->
+<header class="app-header">
+    <div class="logo">
+        <a href="/">
+            <img src="/static/img/logo.svg" alt="Door Installation Assistant Logo">
+            <h1>Door Installation Assistant</h1>
+        </a>
+    </div>
+    <div class="header-actions">
+        <a href="/search.html" class="btn btn-secondary" id="searchLink">
+            <i class="fa fa-search"></i> Search
+        </a>
+        <a href="/chat.html" class="btn btn-secondary" id="chatLink">
+            <i class="fa fa-comment"></i> Chat
+        </a>
+        <button id="btnSettings" class="btn btn-icon">
+            <i class="fa fa-cog"></i>
+        </button>
+    </div>
+</header>
+
+<script>
+    // Determine current page and hide corresponding link
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPath = window.location.pathname;
+        
+        if (currentPath.includes('search.html')) {
+            document.getElementById('searchLink').style.display = 'none';
+        } else if (currentPath.includes('chat.html') || currentPath === '/' || currentPath === '/index.html') {
+            document.getElementById('chatLink').style.display = 'none';
+        }
+    });
+</script>

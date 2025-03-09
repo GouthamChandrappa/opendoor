@@ -1,3 +1,5 @@
+
+bash```
 door_installation_assistant/
 ├── config/
 │   ├── __init__.py
@@ -11,12 +13,7 @@ door_installation_assistant/
 │   └── embedding_generator.py # Generate embeddings for documents
 ├── vector_storage/
 │   ├── __init__.py
-│   ├── vector_store.py        # Abstract base class for vector stores
 │   ├── qdrant_store.py        # Qdrant implementation
-│   └── alternative_stores/    # Other vector store implementations
-│       ├── __init__.py
-│       ├── pinecone_store.py
-│       └── weaviate_store.py
 ├── retrieval/
 │   ├── __init__.py
 │   ├── retrieval_pipeline.py  # Orchestrates the retrieval process
@@ -59,10 +56,6 @@ door_installation_assistant/
 │   └── middleware/
 │       ├── __init__.py
 │       └── auth.py            # Authentication middleware
-├── ui/
-│   ├── __init__.py
-│   ├── app.py                 # Streamlit UI entry point
-│   └── components/            # UI components
 ├── utils/
 │   ├── __init__.py
 │   ├── file_utils.py          # File handling utilities
@@ -77,3 +70,62 @@ door_installation_assistant/
 ├── docker-compose.yml         # Docker setup
 ├── Dockerfile                 # Docker image definition
 └── README.md                  # Project documentation
+├── web_ui/
+│   ├── static/
+│   │   ├── css/
+│   │   │   ├── main.css
+│   │   │   ├── chat.css
+│   │   │   └── components.css
+│   │   ├── js/
+│   │   │   ├── api.js
+│   │   │   ├── chat.js
+│   │   │   ├── search.js
+│   │   │   ├── upload.js
+│   │   │   └── utils.js
+│   │   └── img/
+│   │       ├── logo.svg
+│   │       ├── icon-door.svg
+│   │       ├── icon-tool.svg
+│   │       └── icon-safety.svg
+│   ├── templates/
+│   │   ├── index.html
+│   │   ├── chat.html
+│   │   ├── search.html
+│   │   └── components/
+│   │       ├── header.html
+│   │       ├── footer.html
+│   │       ├── chat-window.html
+│   │       ├── search-results.html
+│   │       └── upload-form.html
+│   └── server.py  # Simple server to serve the UI (using Flask)
+
+
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│                 │     │                 │     │                 │
+│  Installation   │────▶│  Vector         │────▶│  Field Support  │
+│  Document       │     │  Storage        │     │  Agent          │
+│  Processing     │     │                 │     │  Orchestration  │
+│                 │     │                 │     │                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+        │                        │                      │
+        │                        │                      │
+        ▼                        ▼                      ▼
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│                 │     │                 │     │                 │
+│  Installation   │◀───▶│  LLM            │◀───▶│  Field Support  │
+│  Retrieval      │     │  Integration    │     │  Evaluation     │
+│  Pipeline       │     │                 │     │  Framework      │
+│                 │     │                 │     │                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                                │
+                                │
+                                ▼
+                        ┌─────────────────┐
+                        │                 │
+                        │  Mobile-First   │
+                        │  Field          │
+                        │  Interface      │
+                        │                 │
+                        └─────────────────┘
+
+```
