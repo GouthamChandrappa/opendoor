@@ -1,5 +1,5 @@
 
-bash```
+```bash
 door_installation_assistant/
 ├── config/
 │   ├── __init__.py
