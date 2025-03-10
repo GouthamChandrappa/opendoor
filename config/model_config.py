@@ -1,6 +1,7 @@
 # door_installation_assistant/config/model_config.py
 from typing import Dict, List, Any, Optional, Union
-from pydantic import BaseSettings, Field, validator
+from pydantic_settings import BaseSettings
+from pydantic import Field, validator
 import os
 
 class OpenAIConfig(BaseSettings):
@@ -10,7 +11,7 @@ class OpenAIConfig(BaseSettings):
     organization_id: Optional[str] = Field(None, description="OpenAI organization ID")
     
     # LLM models
-    chat_model: str = Field("gpt-4o", description="OpenAI chat model")
+    chat_model: str = Field("gpt-3.5-turbo", description="OpenAI chat model")
     chat_fallback_model: str = Field("gpt-3.5-turbo", description="Fallback chat model")
     
     # Embedding models
@@ -39,6 +40,7 @@ class OpenAIConfig(BaseSettings):
     class Config:
         env_prefix = "OPENAI_"
         env_file = ".env"
+        extra = "ignore"
     
     @validator("api_key", pre=True, always=True)
     def validate_api_key(cls, v):
@@ -47,40 +49,6 @@ class OpenAIConfig(BaseSettings):
             v = os.environ.get("OPENAI_API_KEY")
         if v is None:
             raise ValueError("OpenAI API key is required")
-        return v
-
-class AnthropicConfig(BaseSettings):
-    """Anthropic model configuration."""
-    
-    api_key: Optional[str] = Field(None, description="Anthropic API key")
-    
-    # LLM models
-    chat_model: str = Field("claude-3-opus-20240229", description="Anthropic chat model")
-    chat_fallback_model: str = Field(
-        "claude-3-sonnet-20240229", 
-        description="Fallback chat model"
-    )
-    
-    # Generation parameters
-    temperature: float = Field(0.2, description="Temperature for generation")
-    max_tokens: int = Field(1000, description="Maximum tokens for generation")
-    top_p: float = Field(0.95, description="Top-p for generation")
-    
-    # Rate limiting
-    requests_per_minute: int = Field(50, description="API requests per minute")
-    tokens_per_minute: int = Field(80000, description="API tokens per minute")
-    retry_attempts: int = Field(3, description="Number of retry attempts")
-    retry_delay: float = Field(1.0, description="Initial retry delay in seconds")
-    
-    class Config:
-        env_prefix = "ANTHROPIC_"
-        env_file = ".env"
-    
-    @validator("api_key", pre=True, always=True)
-    def validate_api_key(cls, v):
-        """Validate API key."""
-        if v is None:
-            v = os.environ.get("ANTHROPIC_API_KEY")
         return v
 
 class CohereConfig(BaseSettings):
@@ -100,6 +68,7 @@ class CohereConfig(BaseSettings):
     class Config:
         env_prefix = "COHERE_"
         env_file = ".env"
+        extra = "ignore"
     
     @validator("api_key", pre=True, always=True)
     def validate_api_key(cls, v):
@@ -114,7 +83,7 @@ class ModelConfig(BaseSettings):
     # Primary LLM provider
     primary_llm_provider: str = Field(
         "openai", 
-        description="Primary LLM provider (openai, anthropic)"
+        description="Primary LLM provider (openai)"
     )
     
     # Primary embedding provider
@@ -131,30 +100,29 @@ class ModelConfig(BaseSettings):
     
     # Provider configurations
     openai: OpenAIConfig = Field(default_factory=OpenAIConfig)
-    anthropic: AnthropicConfig = Field(default_factory=AnthropicConfig)
     cohere: CohereConfig = Field(default_factory=CohereConfig)
     
     # Door type identification models
     door_identification_model: str = Field(
-        "openai/gpt-4o", 
+        "openai/gpt-3.5-turbo", 
         description="Model for door type identification"
     )
     
     # Installation procedure models
     installation_procedure_model: str = Field(
-        "openai/gpt-4o", 
+        "openai/gpt-3.5-turbo", 
         description="Model for installation procedures"
     )
     
     # Troubleshooting models
     troubleshooting_model: str = Field(
-        "openai/gpt-4o", 
+        "openai/gpt-3.5-turbo", 
         description="Model for troubleshooting"
     )
     
     # Response evaluation models
     evaluation_model: str = Field(
-        "openai/gpt-4o", 
+        "openai/gpt-3.5-turbo", 
         description="Model for response evaluation"
     )
     
@@ -163,8 +131,6 @@ class ModelConfig(BaseSettings):
         default_factory=lambda: {
             "openai/gpt-4o": 32000,
             "openai/gpt-3.5-turbo": 16000,
-            "anthropic/claude-3-opus-20240229": 32000,
-            "anthropic/claude-3-sonnet-20240229": 28000,
         },
         description="Context window sizes for models"
     )
@@ -188,8 +154,9 @@ class ModelConfig(BaseSettings):
     class Config:
         env_prefix = "MODEL_"
         env_file = ".env"
+        extra = "ignore"
     
-    def get_llm_provider_config(self, provider: Optional[str] = None) -> Union[OpenAIConfig, AnthropicConfig]:
+    def get_llm_provider_config(self, provider: Optional[str] = None) -> Union[OpenAIConfig]:
         """
         Get the configuration for a specific LLM provider.
         
@@ -203,8 +170,6 @@ class ModelConfig(BaseSettings):
         
         if provider == "openai":
             return self.openai
-        elif provider == "anthropic":
-            return self.anthropic
         else:
             raise ValueError(f"Unknown LLM provider: {provider}")
     
@@ -285,8 +250,6 @@ class ModelConfig(BaseSettings):
             provider = self.primary_llm_provider
             if provider == "openai":
                 model = f"{provider}/{self.openai.chat_model}"
-            elif provider == "anthropic":
-                model = f"{provider}/{self.anthropic.chat_model}"
         
         # If model doesn't have provider prefix, add the primary provider
         if "/" not in model:

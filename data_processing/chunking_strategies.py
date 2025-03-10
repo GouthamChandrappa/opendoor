@@ -1,31 +1,63 @@
-# door_installation_assistant/data_processing/chunking_strategies.py
+"""
+Chunking strategies module for door installation assistant.
+Handles various approaches to splitting documents into manageable chunks.
+"""
+
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
 import logging
-import nltk
-from nltk.tokenize import sent_tokenize
 import re
 
-from ..config.app_config import get_config
-
-# Ensure NLTK data is downloaded
+# Import NLTK conditionally to handle import errors
 try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt')
+    import nltk
+    from nltk.tokenize import sent_tokenize
+    
+    # Ensure NLTK data is downloaded
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        nltk.download('punkt', quiet=True)
+    
+    NLTK_AVAILABLE = True
+except ImportError:
+    NLTK_AVAILABLE = False
+    logging.warning("NLTK not available. Using simple sentence splitting.")
+
+from config.app_config import get_config
 
 logger = logging.getLogger(__name__)
 
 class ChunkingStrategy(ABC):
     """Base class for document chunking strategies."""
     
-    def __init__(self):
-        self.config = get_config().document_processing
+    def __init__(self, config=None):
+        # Allow dependency injection or use global config
+        self.config = config or get_config().document_processing
+        self.chunk_size = getattr(self.config, "chunk_size", 1000)
+        self.chunk_overlap = getattr(self.config, "chunk_overlap", 200)
     
     @abstractmethod
     def create_chunks(self, document: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Create chunks from a document."""
         pass
+    
+    def _split_text_into_sentences(self, text: str) -> List[str]:
+        """Split text into sentences using NLTK if available."""
+        if not text:
+            return []
+            
+        if NLTK_AVAILABLE:
+            return sent_tokenize(text)
+        else:
+            # Simple sentence splitting
+            sentences = []
+            for paragraph in text.split('\n'):
+                # Split on common sentence endings
+                for sentence in re.split(r'(?<=[.!?])\s+', paragraph):
+                    if sentence.strip():
+                        sentences.append(sentence.strip())
+            return sentences
 
 class HierarchicalChunkingStrategy(ChunkingStrategy):
     """Hierarchical chunking strategy that preserves document structure."""
@@ -96,7 +128,7 @@ class HierarchicalChunkingStrategy(ChunkingStrategy):
             # If adding this step would exceed the target chunk size and we already have content,
             # create a chunk and start a new one
             step_size = len(step_text)
-            if current_chunk_size + step_size > self.config.chunk_size and current_chunk_text:
+            if current_chunk_size + step_size > self.chunk_size and current_chunk_text:
                 chunks.append({
                     "type": "installation_step",
                     "text": "\n".join(current_chunk_text),
@@ -136,7 +168,7 @@ class HierarchicalChunkingStrategy(ChunkingStrategy):
             section_text = heading + "\n\n" + "\n".join([p.get("text", "") for p in paragraphs])
             
             # If section is small enough, keep it as one chunk
-            if len(section_text) <= self.config.chunk_size:
+            if len(section_text) <= self.chunk_size:
                 chunks.append({
                     "type": f"{section_type}_section",
                     "text": section_text,
@@ -148,14 +180,14 @@ class HierarchicalChunkingStrategy(ChunkingStrategy):
                 })
             else:
                 # Split large sections into smaller chunks
-                sentences = sent_tokenize(section_text)
+                sentences = self._split_text_into_sentences(section_text)
                 current_chunk = []
                 current_size = 0
                 
                 for sentence in sentences:
                     sentence_size = len(sentence)
                     
-                    if current_size + sentence_size > self.config.chunk_size and current_chunk:
+                    if current_size + sentence_size > self.chunk_size and current_chunk:
                         chunks.append({
                             "type": f"{section_type}_section",
                             "text": " ".join(current_chunk),
@@ -201,7 +233,7 @@ class HierarchicalChunkingStrategy(ChunkingStrategy):
             
             # If adding this paragraph would exceed the chunk size and we already have content,
             # create a chunk and start a new one
-            if current_size + paragraph_size > self.config.chunk_size and current_chunk:
+            if current_size + paragraph_size > self.chunk_size and current_chunk:
                 chunks.append({
                     "type": "paragraph",
                     "text": "\n\n".join(current_chunk),
@@ -309,7 +341,7 @@ class SemanticChunkingStrategy(ChunkingStrategy):
             
             # If adding this element would exceed the chunk size and we already have content,
             # create a chunk and start a new one
-            if len(current_chunk_text) + len(element_text) > self.config.chunk_size and current_chunk:
+            if len(current_chunk_text) + len(element_text) > self.chunk_size and current_chunk:
                 chunks.append({
                     "type": "semantic_section",
                     "text": current_chunk_text,
@@ -385,14 +417,14 @@ class FixedSizeChunkingStrategy(ChunkingStrategy):
         
         # Create fixed-size chunks
         chunks = []
-        sentences = sent_tokenize(all_text)
+        sentences = self._split_text_into_sentences(all_text)
         current_chunk = []
         current_size = 0
         
         for sentence in sentences:
             sentence_size = len(sentence)
             
-            if current_size + sentence_size > self.config.chunk_size and current_chunk:
+            if current_size + sentence_size > self.chunk_size and current_chunk:
                 chunks.append({
                     "type": "fixed_chunk",
                     "text": " ".join(current_chunk),
@@ -424,17 +456,105 @@ class FixedSizeChunkingStrategy(ChunkingStrategy):
         
         return chunks
 
+class SlidingWindowChunkingStrategy(ChunkingStrategy):
+    """
+    Sliding window chunking strategy with overlapping chunks.
+    This strategy helps maintain context between chunks.
+    """
+    
+    def create_chunks(self, document: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Create chunks using a sliding window approach."""
+        # Extract all text from the document
+        all_text = ""
+        
+        # Add headings
+        for heading in document.get("headings", []):
+            all_text += heading.get("text", "") + "\n\n"
+        
+        # Add paragraphs
+        for paragraph in document.get("paragraphs", []):
+            all_text += paragraph.get("text", "") + "\n\n"
+        
+        # Add installation steps
+        for step in document.get("installation_steps", []):
+            all_text += step.get("text", "") + "\n\n"
+        
+        # Split text into sentences
+        sentences = self._split_text_into_sentences(all_text)
+        
+        # Create chunks with overlapping windows
+        chunks = []
+        
+        # Handle edge case of very short text
+        if len(sentences) == 0:
+            return []
+        elif len(all_text) <= self.chunk_size:
+            chunks.append({
+                "type": "sliding_window_chunk",
+                "text": all_text,
+                "metadata": {
+                    "content_type": "general_info",
+                    "chunk_index": 0
+                }
+            })
+            
+        else:
+            # Calculate number of sentences per chunk based on avg sentence length
+            avg_sent_len = len(all_text) / len(sentences)
+            approx_sents_per_chunk = max(1, int(self.chunk_size / avg_sent_len))
+            overlap_sents = max(1, int(self.chunk_overlap / avg_sent_len))
+            
+            # Create chunks
+            for i in range(0, len(sentences), approx_sents_per_chunk - overlap_sents):
+                end_idx = min(i + approx_sents_per_chunk, len(sentences))
+                chunk_text = " ".join(sentences[i:end_idx])
+                
+                # Check if chunk is too large and needs splitting
+                if len(chunk_text) > self.chunk_size * 1.5:
+                    # Simple character-based split as a fallback
+                    for j in range(0, len(chunk_text), self.chunk_size - self.chunk_overlap):
+                        sub_chunk = chunk_text[j:j + self.chunk_size]
+                        if sub_chunk:
+                            chunks.append({
+                                "type": "sliding_window_chunk",
+                                "text": sub_chunk,
+                                "metadata": {
+                                    "content_type": "general_info",
+                                    "chunk_index": len(chunks)
+                                }
+                            })
+                else:
+                    chunks.append({
+                        "type": "sliding_window_chunk",
+                        "text": chunk_text,
+                        "metadata": {
+                            "content_type": "general_info",
+                            "chunk_index": len(chunks)
+                        }
+                    })
+                
+                # Stop if we've reached the end
+                if end_idx >= len(sentences):
+                    break
+        
+        # Add document metadata to all chunks
+        for chunk in chunks:
+            chunk["metadata"].update(document.get("metadata", {}))
+        
+        return chunks
+
 # Factory function to get the appropriate chunking strategy
-def get_chunking_strategy(strategy_name: str) -> ChunkingStrategy:
+def get_chunking_strategy(strategy_name: str, config=None) -> ChunkingStrategy:
     """Get the appropriate chunking strategy based on the strategy name."""
     strategies = {
         "hierarchical": HierarchicalChunkingStrategy,
         "semantic": SemanticChunkingStrategy,
         "fixed": FixedSizeChunkingStrategy,
+        "sliding_window": SlidingWindowChunkingStrategy
     }
     
     if strategy_name not in strategies:
         logger.warning(f"Unknown chunking strategy: {strategy_name}. Using hierarchical strategy.")
-        return HierarchicalChunkingStrategy()
+        return HierarchicalChunkingStrategy(config)
     
-    return strategies[strategy_name]()
+    return strategies[strategy_name](config)

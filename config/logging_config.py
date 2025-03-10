@@ -2,8 +2,9 @@
 import os
 import logging
 import logging.handlers
-from typing import Dict, Any, Optional
-from pydantic import BaseSettings, Field
+from typing import Dict, Optional
+from pydantic_settings import BaseSettings
+from pydantic import Field, validator
 
 class LoggingConfig(BaseSettings):
     """Logging configuration settings."""
@@ -46,6 +47,7 @@ class LoggingConfig(BaseSettings):
     class Config:
         env_prefix = "LOG_"
         env_file = ".env"
+        extra = "ignore"
 
 def get_logging_config() -> LoggingConfig:
     """Get the logging configuration."""

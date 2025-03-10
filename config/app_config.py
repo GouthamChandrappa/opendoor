@@ -1,20 +1,20 @@
-# door_installation_assistant/config/app_config.py
+
 import os
 from typing import Dict, Any, List, Optional
-from pydantic import BaseSettings, Field
+from pydantic_settings import BaseSettings
+from pydantic import Field, validator
 
 class VectorStoreConfig(BaseSettings):
-    provider: str = Field("qdrant", description="Vector store provider (qdrant, pinecone, weaviate)")
+    provider: str = Field("qdrant", description="Vector store provider (qdrant)")
     host: str = Field("localhost", description="Vector store host")
     port: int = Field(6333, description="Vector store port")
     collection_name: str = Field("door_installations", description="Collection name in vector store")
     dimension: int = Field(1536, description="Embedding dimension")
-    url: Optional[str] = Field(None, description="URL for cloud-hosted vector stores")
-    api_key: Optional[str] = Field(None, description="API key for vector store")
     
     class Config:
         env_prefix = "VECTOR_STORE_"
         env_file = ".env"
+        extra = "ignore"
 
 class DocumentProcessingConfig(BaseSettings):
     chunk_strategy: str = Field("hierarchical", description="Chunking strategy (hierarchical, semantic, fixed)")
@@ -26,38 +26,42 @@ class DocumentProcessingConfig(BaseSettings):
     class Config:
         env_prefix = "DOC_PROC_"
         env_file = ".env"
+        extra = "ignore"
 
 class LLMConfig(BaseSettings):
-    provider: str = Field("openai", description="LLM provider (openai, anthropic, etc)")
+    provider: str = Field("openai", description="LLM provider")
     model_name: str = Field("gpt-4o", description="LLM model name")
     temperature: float = Field(0.2, description="Temperature for LLM generation")
     max_tokens: int = Field(1000, description="Maximum tokens for LLM response")
     api_key: Optional[str] = Field(None, description="API key for LLM provider")
     
     class Config:
-        env_prefix = "LLM_"
+        env_prefix = "OPENAI_"  # Changed to directly use OPENAI prefix
         env_file = ".env"
+        extra = "ignore"
 
 class EmbeddingConfig(BaseSettings):
     provider: str = Field("openai", description="Embedding provider")
-    model_name: str = Field("text-embedding-3-large", description="Embedding model name")
+    model_name: str = Field("text-embedding-3-small", description="Embedding model name")
     batch_size: int = Field(100, description="Batch size for embedding generation")
     api_key: Optional[str] = Field(None, description="API key for embedding provider")
-    
+    dimension: int = Field(1536, description="Embedding dimension")
+       
     class Config:
-        env_prefix = "EMBEDDING_"
+        env_prefix = "OPENAI_"  # Changed to directly use OPENAI prefix
         env_file = ".env"
+        extra = "ignore"
 
 class RetrievalConfig(BaseSettings):
     retrieval_type: str = Field("hybrid", description="Retrieval type (hybrid, vector, keyword)")
     top_k: int = Field(10, description="Number of documents to retrieve")
     use_reranking: bool = Field(True, description="Whether to use reranking")
-    reranker_model: str = Field("cohere", description="Reranker model to use")
     reranker_top_k: int = Field(5, description="Number of documents after reranking")
     
     class Config:
         env_prefix = "RETRIEVAL_"
         env_file = ".env"
+        extra = "ignore"
 
 class AgentConfig(BaseSettings):
     framework: str = Field("crewai", description="Agent framework (crewai, langchain)")
@@ -70,6 +74,7 @@ class AgentConfig(BaseSettings):
     class Config:
         env_prefix = "AGENT_"
         env_file = ".env"
+        extra = "ignore"
 
 class AppConfig(BaseSettings):
     app_name: str = Field("Door Installation Assistant", description="Application name")
@@ -91,6 +96,7 @@ class AppConfig(BaseSettings):
     class Config:
         env_prefix = "APP_"
         env_file = ".env"
+        extra = "ignore"
 
 # Create a singleton config instance
 config = AppConfig()

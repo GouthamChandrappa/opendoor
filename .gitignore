@@ -1,0 +1,8 @@
+.env
+logs/
+*.pyc
+__pychache__/
+dataset/
+process_dentil_shelf.py
+test_config.py
+test_data_processing.py

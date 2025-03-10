@@ -1,6 +1,6 @@
 # Project Structure
 ```bash
-door_installation_assistant/
+opendoor/
 ├── config/
 │   ├── __init__.py
 │   ├── app_config.py          # Main configuration settings

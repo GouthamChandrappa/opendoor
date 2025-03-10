@@ -1,32 +1,60 @@
-# door_installation_assistant/data_processing/document_processor.py
+"""
+Document processor module for door installation assistant.
+Handles PDF extraction, structure identification, and chunk creation.
+"""
+
 import os
 import logging
-from typing import List, Dict, Any, Optional, Tuple
+import asyncio
+from typing import List, Dict, Any, Optional, Tuple, Union
 from abc import ABC, abstractmethod
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
 
-from unstructured.partition.pdf import partition_pdf
-from unstructured.partition.html import partition_html
-from unstructured.staging.base import convert_to_dict
+# Import PDF processing libraries conditionally to handle potential import errors
+try:
+    from unstructured.partition.pdf import partition_pdf
+    from unstructured.partition.html import partition_html
+    from unstructured.staging.base import convert_to_dict, convert_to_isd
+    UNSTRUCTURED_AVAILABLE = True
+except ImportError:
+    UNSTRUCTURED_AVAILABLE = False
+    logging.warning("Unstructured library not available. PDF processing will be limited.")
 
-from ..config.app_config import get_config
-from .chunking_strategies import get_chunking_strategy
-from .embedding_generator import EmbeddingGenerator
+from config.app_config import get_config
+from data_processing.chunking_strategies import get_chunking_strategy
+from data_processing.embedding_generator import EmbeddingGenerator, MockEmbeddingGenerator
 
 logger = logging.getLogger(__name__)
 
 class DocumentProcessor(ABC):
     """Base document processor class."""
     
-    def __init__(self):
-        self.config = get_config().document_processing
-        self.chunking_strategy = get_chunking_strategy(self.config.chunk_strategy)
-        self.embedding_generator = EmbeddingGenerator()
+    def __init__(self, config=None, chunking_strategy=None, embedding_generator=None):
+        # Allow dependency injection or use global config
+        self.config = config or get_config().document_processing
+        self.chunking_strategy = chunking_strategy or get_chunking_strategy(self.config.chunk_strategy)
+        self.embedding_generator = embedding_generator or self._create_embedding_generator()
+    
+    def _create_embedding_generator(self):
+        """Create an embedding generator based on config or environment"""
+        # Use mock embeddings if specified in config or environment variables
+        use_mock = os.environ.get("USE_MOCK_EMBEDDINGS", "").lower() == "true"
+        if use_mock or getattr(self.config, "use_mock_embeddings", False):
+            return MockEmbeddingGenerator()
+        return EmbeddingGenerator()
     
     @abstractmethod
     def process_document(self, file_path: str) -> List[Dict[str, Any]]:
         """Process a document and return chunks with metadata."""
         pass
+    
+    async def process_document_async(self, file_path: str) -> List[Dict[str, Any]]:
+        """Process a document asynchronously."""
+        # Run synchronous processing in a thread pool
+        loop = asyncio.get_event_loop()
+        with ThreadPoolExecutor() as pool:
+            return await loop.run_in_executor(pool, self.process_document, file_path)
     
     def extract_metadata(self, file_path: str, content: Any) -> Dict[str, Any]:
         """Extract metadata from a document."""
@@ -96,6 +124,12 @@ class PDFDocumentProcessor(DocumentProcessor):
         """Process a PDF document and return chunks with metadata."""
         logger.info(f"Processing PDF document: {file_path}")
         
+        if not UNSTRUCTURED_AVAILABLE:
+            raise ImportError(
+                "The unstructured library is required for PDF processing. "
+                "Install it using 'pip install unstructured pdf2image pdfminer.six'"
+            )
+        
         try:
             # Extract elements from PDF using Unstructured
             elements = partition_pdf(
@@ -106,7 +140,15 @@ class PDFDocumentProcessor(DocumentProcessor):
             )
             
             # Convert elements to dictionary for easier processing
-            elements_dict = [convert_to_dict(element) for element in elements]
+
+            # Updated code:
+            # Ensure elements is a list before processing
+            if not isinstance(elements, list):
+                elements = [elements]
+
+            # Convert all elements to a list of dictionaries at once
+            elements_dict = convert_to_isd(elements)
+
             
             # Extract text and combine it for metadata extraction
             combined_text = " ".join([e.get("text", "") for e in elements_dict if "text" in e])
@@ -186,6 +228,7 @@ class PDFDocumentProcessor(DocumentProcessor):
     
     def _identify_installation_steps(self, paragraphs: List[Dict[str, Any]], lists: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Identify installation steps from paragraphs and lists."""
+        import re
         installation_steps = []
         
         # Check for numbered paragraphs (Step 1, Step 2, etc.)
@@ -208,6 +251,17 @@ class PDFDocumentProcessor(DocumentProcessor):
                     "type": "installation_step",
                     "text": text,
                     "original_element": list_item
+                })
+        
+        # Also check for numbered items (1., 2., etc.) that might be installation steps
+        for paragraph in paragraphs:
+            text = paragraph.get("text", "")
+            # Look for paragraphs that start with a number followed by period
+            if re.match(r'^\d+\.', text.strip()):
+                installation_steps.append({
+                    "type": "installation_step",
+                    "text": text,
+                    "original_element": paragraph
                 })
         
         # Sort steps based on their position in the document
@@ -261,6 +315,7 @@ class PDFDocumentProcessor(DocumentProcessor):
     
     def _enrich_chunks_with_context(self, chunks: List[Dict[str, Any]], metadata: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Enrich chunks with procedural context and metadata."""
+        import re
         enriched_chunks = []
         
         for i, chunk in enumerate(chunks):
@@ -281,11 +336,22 @@ class PDFDocumentProcessor(DocumentProcessor):
                 # Try to extract step number
                 text = chunk.get("text", "")
                 step_number = None
-                if text.startswith("Step "):
-                    try:
-                        step_number = int(text.split("Step")[1].split(".")[0].strip())
-                    except (ValueError, IndexError):
-                        pass
+                
+                # Try multiple patterns for step numbers
+                step_patterns = [
+                    r"Step\s+(\d+)",  # Step 1
+                    r"^(\d+)\.\s+",   # 1. 
+                    r"Step\s+(\d+):"   # Step 1:
+                ]
+                
+                for pattern in step_patterns:
+                    match = re.search(pattern, text, re.IGNORECASE)
+                    if match:
+                        try:
+                            step_number = int(match.group(1))
+                            break
+                        except (ValueError, IndexError):
+                            pass
                 
                 if step_number:
                     enriched_chunk["metadata"]["step_number"] = step_number
@@ -300,11 +366,63 @@ class PDFDocumentProcessor(DocumentProcessor):
         
         return enriched_chunks
 
+class HTMLDocumentProcessor(DocumentProcessor):
+    """Processor for HTML documents."""
+    
+    def process_document(self, file_path: str) -> List[Dict[str, Any]]:
+        """Process an HTML document and return chunks with metadata."""
+        logger.info(f"Processing HTML document: {file_path}")
+        
+        if not UNSTRUCTURED_AVAILABLE:
+            raise ImportError(
+                "The unstructured library is required for HTML processing. "
+                "Install it using 'pip install unstructured beautifulsoup4'"
+            )
+        
+        try:
+            # Extract elements from HTML using Unstructured
+            elements = partition_html(file_path)
+            
+            # Convert elements to dictionary for easier processing
+            elements_dict = [convert_to_dict(element) for element in elements]
+            
+            # Extract text and combine it for metadata extraction
+            combined_text = " ".join([e.get("text", "") for e in elements_dict if "text" in e])
+            
+            # Extract metadata
+            metadata = self.extract_metadata(file_path, combined_text)
+            
+            # Process similar to PDF but with HTML-specific considerations
+            # For now, using the same processing pipeline
+            organized_elements = self._organize_elements(elements_dict, metadata)
+            chunks = self.chunking_strategy.create_chunks(organized_elements)
+            enriched_chunks = self._enrich_chunks_with_context(chunks, metadata)
+            
+            # Generate embeddings
+            for chunk in enriched_chunks:
+                chunk["embedding"] = self.embedding_generator.generate_embedding(chunk["text"])
+            
+            logger.info(f"Successfully processed document {file_path} into {len(enriched_chunks)} chunks")
+            return enriched_chunks
+            
+        except Exception as e:
+            logger.error(f"Error processing HTML document {file_path}: {str(e)}")
+            raise
+    
+    # Reuse methods from PDFDocumentProcessor with potential HTML-specific adaptations
+    _organize_elements = PDFDocumentProcessor._organize_elements
+    _identify_installation_steps = PDFDocumentProcessor._identify_installation_steps
+    _identify_component_sections = PDFDocumentProcessor._identify_component_sections
+    _identify_tool_sections = PDFDocumentProcessor._identify_tool_sections
+    _enrich_chunks_with_context = PDFDocumentProcessor._enrich_chunks_with_context
+
 # Factory function to get the appropriate document processor
 def get_document_processor(file_type: str) -> DocumentProcessor:
     """Get the appropriate document processor for the given file type."""
     if file_type.lower() == ".pdf":
         return PDFDocumentProcessor()
+    elif file_type.lower() in [".html", ".htm"]:
+        return HTMLDocumentProcessor()
     else:
         raise ValueError(f"Unsupported file type: {file_type}")
 
@@ -314,3 +432,72 @@ def process_document(file_path: str) -> List[Dict[str, Any]]:
     file_type = Path(file_path).suffix.lower()
     processor = get_document_processor(file_type)
     return processor.process_document(file_path)
+
+# Batch processing function
+def process_documents_batch(file_paths: List[str], max_workers: int = 4) -> Dict[str, List[Dict[str, Any]]]:
+    """
+    Process multiple documents in parallel.
+    
+    Args:
+        file_paths: List of file paths to process
+        max_workers: Maximum number of worker threads
+        
+    Returns:
+        Dictionary mapping file paths to their processed chunks
+    """
+    results = {}
+    
+    # Use ThreadPoolExecutor for parallel processing
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Submit all processing tasks
+        future_to_path = {
+            executor.submit(process_document, path): path 
+            for path in file_paths
+        }
+        
+        # Collect results as they complete
+        for future in future_to_path:
+            path = future_to_path[future]
+            try:
+                results[path] = future.result()
+            except Exception as e:
+                logger.error(f"Error processing {path}: {str(e)}")
+                results[path] = []
+    
+    return results
+
+# Async batch processing
+async def process_documents_batch_async(file_paths: List[str]) -> Dict[str, List[Dict[str, Any]]]:
+    """
+    Process multiple documents asynchronously.
+    
+    Args:
+        file_paths: List of file paths to process
+        
+    Returns:
+        Dictionary mapping file paths to their processed chunks
+    """
+    results = {}
+    tasks = []
+    
+    # Create a document processor for each file type
+    processors = {}
+    
+    for path in file_paths:
+        file_type = Path(path).suffix.lower()
+        if file_type not in processors:
+            processors[file_type] = get_document_processor(file_type)
+        
+        # Create async task
+        task = asyncio.create_task(processors[file_type].process_document_async(path))
+        tasks.append((path, task))
+    
+    # Await all tasks
+    for path, task in tasks:
+        try:
+            results[path] = await task
+        except Exception as e:
+            logger.error(f"Error processing {path}: {str(e)}")
+            results[path] = []
+    
+    return results
